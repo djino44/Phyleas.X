@@ -8,16 +8,18 @@
 #ifndef XBEE_H
 #define	XBEE_H
 
-#ifdef	__cplusplus
-extern "C" {
-#endif
 
 
 
+#define UART_MODULE_ID (UART1)
+#define DESIRED_BAUDRATE (57600)
 
-#ifdef	__cplusplus
-}
-#endif
+/*Prototypes*/
+
+void WriteStringXbee(const char *string);
+void PutCharacterXbee(const char character);
 
 #endif	/* XBEE_H */
+
+
 
