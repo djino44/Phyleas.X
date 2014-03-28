@@ -8,16 +8,13 @@
 #ifndef BLUETOOTH_H
 #define	BLUETOOTH_H
 
-#ifdef	__cplusplus
-extern "C" {
-#endif
 
 
+/***********Prototypes************/
 
-
-#ifdef	__cplusplus
-}
-#endif
+void InitBluetooth(void);
+void WriteStringBluetooth(const char *string);
+void PutCharacterBluetooth(const char character);
 
 #endif	/* BLUETOOTH_H */
 

@@ -12,10 +12,14 @@
 
 
 #define UART_MODULE_ID (UART1)
-#define DESIRED_BAUDRATE (57600)
+#define DESIRED_BAUDRATE_XBEE (115200)
+
+/*Variables*/
+
+
 
 /*Prototypes*/
-
+void Init_Xbee(void);
 void WriteStringXbee(const char *string);
 void PutCharacterXbee(const char character);
 
