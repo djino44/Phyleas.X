@@ -43,16 +43,20 @@ int main (void)
     initLCD();
     putsLCD("RRC");
     DelayMs(1500);
-    //InitBluetooth();
+    InitBluetooth();
     mPORTDSetPinsDigitalOut(BIT_0);
     mPORTDSetBits(BIT_0);
-    WriteStringBluetooth("$$$");
 
+    INTConfigureSystem(INT_SYSTEM_CONFIG_MULT_VECTOR);
+    INTEnableInterrupts();
+
+    
     while(1)
     {
         mPORTDToggleBits(BIT_0);
-        delay_for_1000_nops_x(1010);
-        //WriteStringBluetooth("D\n");
+       
+        DelayMs(1000);
+        
     }
     return -1;
 }

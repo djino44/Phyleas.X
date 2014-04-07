@@ -29,9 +29,7 @@ void Init_Xbee(void)
     INTSetVectorSubPriority(INT_VECTOR_UART(UART_MODULE_ID), INT_SUB_PRIORITY_LEVEL_1);
 
     // Enable multi-vector interrupts
-    INTConfigureSystem(INT_SYSTEM_CONFIG_MULT_VECTOR);
-    INTEnableInterrupts();
-
+    
     WriteStringXbee("*** UART Xbee Initialized ***\r\n");
     
 }
@@ -62,7 +60,24 @@ void PutCharacterXbee(const char character)
         while(!UARTTransmissionHasCompleted(UART_MODULE_ID));
 }
 
+void ProgMode(void)
+{
+    
+    PutCharacterBluetooth('$');
+    DelayMs(10);
+    PutCharacterBluetooth('$');
+    DelayMs(10);
+    PutCharacterBluetooth('$');
+    DelayMs(10);
+}
 
+void Reset_BT(void)
+{
+    mPORTBClearBits(BIT_9); // active reset
+    DelayMs(10);
+    mPORTBSetBits(BIT_9); //  reset
+    DelayMs(1);
+}
 void __ISR(_UART_1_VECTOR, ipl2) IntUart1Handler(void)
 {
 	// Is this an RX interrupt?
@@ -73,15 +88,22 @@ void __ISR(_UART_1_VECTOR, ipl2) IntUart1Handler(void)
             {// none zero if UART has received data
                 toto = UARTGetDataByte(UART_MODULE_ID);
             }
-            PutCharacterXbee(toto);
-            if(toto=='c')
+                //PutCharacterXbee(toto);
+            if(toto=='p')
             {
-                 writeLCD( LCDCMD, 1);
+                ProgMode();
+                WriteStringXbee("Prog.mode\n");
             }
-            else
+            else if (toto=='d')
             {
-                putLCD(toto);
-
+                WriteStringXbee("Inforequest\n");
+                PutCharacterBluetooth('D');
+                PutCharacterBluetooth(0x0D);
+            }
+            else if (toto=='c')
+            {
+                Reset_BT();
+                WriteStringXbee("Reset\n");
             }
             
 	    INTClearFlag(INT_SOURCE_UART_RX(UART_MODULE_ID));
