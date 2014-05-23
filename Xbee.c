@@ -1,4 +1,5 @@
-/*
+
+ /*
  * File:   Xbee.c
  * Author: Radjy RAMLALL
  * Project: Phyleas Dev
@@ -11,7 +12,7 @@
 #include "LCD.h"
 
 
-volatile static char toto=NULL;
+volatile static char toto=0;
 
 
 void Init_Xbee(void)
@@ -30,7 +31,7 @@ void Init_Xbee(void)
 
     // Enable multi-vector interrupts
     
-    WriteStringXbee("*** UART Xbee Initialized ***\r\n");
+    WriteStringXbee("*** UART Xbee2 Initialized ***\r\n");
     
 }
 
@@ -74,7 +75,7 @@ void ProgMode(void)
 void Reset_BT(void)
 {
     mPORTBClearBits(BIT_9); // active reset
-    DelayMs(10);
+    DelayMs(1000);
     mPORTBSetBits(BIT_9); //  reset
     DelayMs(1);
 }
@@ -100,10 +101,14 @@ void __ISR(_UART_1_VECTOR, ipl2) IntUart1Handler(void)
                 PutCharacterBluetooth('D');
                 PutCharacterBluetooth(0x0D);
             }
-            else if (toto=='c')
+            else if (toto=='!')
             {
                 Reset_BT();
                 WriteStringXbee("Reset\n");
+            }
+            else
+            {
+                PutCharacterBluetooth(toto);
             }
             
 	    INTClearFlag(INT_SOURCE_UART_RX(UART_MODULE_ID));

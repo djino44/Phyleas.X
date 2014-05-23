@@ -16,23 +16,52 @@
 #include <peripheral/uart.h>
 
 #define UART_MODULE_ID (UART2)
-#define DESIRED_BAUDRATE (9600)
+//#define DESIRED_BAUDRATE (921600)
+#define DESIRED_BAUDRATE (115200)
 #define Reset_BT (mPORTBClearBits(BIT_9))
 
-volatile char BtBuff;
+
+void Init_Tab(void)
+{
+    int b;
+    for(b=0;b<3000;b++)
+    {
+        BtBuff[b]=0;
+    }
+    I_Read=I_Write=0;
+    myFirst_Time_Flag =1;
+}
+
 
 void InitBluetooth(void)
 {
-    mPORTBSetPinsDigitalOut(BIT_9);
-    mPORTBSetBits(BIT_9);// BT high level, the reset polarity is active low
 
-    mPORTASetPinsDigitalOut(BIT_3);
-    mPORTASetBits(BIT_3);// Set Baud rate (high = force 9,600, low = 115 K or firmware setting)
- 
-    mPORTASetPinsDigitalOut(BIT_2);
-    mPORTASetBits(BIT_2);// Set BT master (high = auto-master mode)
+    #if DESIRED_BAUDRATE == 9600
+        mPORTBSetPinsDigitalOut(BIT_9);
+        mPORTBSetBits(BIT_9);// BT high level, the reset polarity is active low
 
-    UARTConfigure(UART_MODULE_ID, UART_ENABLE_PINS_TX_RX_ONLY);
+        mPORTASetPinsDigitalOut(BIT_3);
+        mPORTASetBits(BIT_3);// Set Baud rate (high = force 9,600, low = 115 K or firmware setting)
+
+        mPORTASetPinsDigitalOut(BIT_2);
+        mPORTASetBits(BIT_2);// Set BT master (high = auto-master mode)
+
+    #elif DESIRED_BAUDRATE == 115200
+        mPORTBSetPinsDigitalOut(BIT_9);
+        mPORTBSetBits(BIT_9);// BT high level, the reset polarity is active low
+
+        mPORTASetPinsDigitalOut(BIT_3);
+        mPORTAClearBits(BIT_3);// Set Baud rate (high = force 9,600, low = 115 K or firmware setting)
+
+        mPORTASetPinsDigitalOut(BIT_2);
+        mPORTASetBits(BIT_2);// Set BT master (high = auto-master mode)
+    
+    #elif DESIRED_BAUDRATE ==921600
+        //nothing
+
+    #endif
+
+    UARTConfigure(UART_MODULE_ID, UART_ENABLE_PINS_TX_RX_ONLY|UART_ENABLE_PINS_CTS_RTS);
     UARTConfigure(UART_MODULE_ID, UART_ENABLE_HIGH_SPEED);
     UARTSetFifoMode(UART_MODULE_ID, UART_INTERRUPT_ON_TX_NOT_FULL | UART_INTERRUPT_ON_RX_NOT_EMPTY);
     UARTSetLineControl(UART_MODULE_ID, UART_DATA_SIZE_8_BITS | UART_PARITY_NONE | UART_STOP_BITS_1);
@@ -49,7 +78,7 @@ void InitBluetooth(void)
 
     //WriteStringXbee("*** UART Bluetooth demarre ***\r\n");
     
-
+   
 }
 
 
@@ -85,15 +114,35 @@ void __ISR(_UART_2_VECTOR, ipl2) IntUart2Handler(void)
 	if(INTGetFlag(INT_SOURCE_UART_RX(UART_MODULE_ID)))
 	{
             // Clear the RX interrupt Flag
+/*
+            BtBuff[I_Write] = UARTGetDataByte(UART_MODULE_ID);
 
-            BtBuff = UARTGetDataByte(UART_MODULE_ID);
-            
-            PutCharacterXbee(BtBuff);
-	    INTClearFlag(INT_SOURCE_UART_RX(UART_MODULE_ID));
+            if((I_Write==I_Read)&&(myFirst_Time_Flag))
+            {
+                I_Write++;
+            }
+            if((I_Write==I_Read)&&(!myFirst_Time_Flag))
+            {
+                Buff1=UARTGetDataByte(UART_MODULE_ID);
+                PutCharacterXbee(Buff1);
+            }
+            else if (I_Write==2999)
+            {
+                I_Write=0;
+            }
+            else
+            {
+                I_Write++;
+            }
+*/
+           // while(!UARTTransmitterIsReady(UART1));
+            PutCharacterXbee(UARTGetDataByte(UART_MODULE_ID));
+            // while(!UARTTransmissionHasCompleted(UART1));
+            INTClearFlag(INT_SOURCE_UART_RX(UART_MODULE_ID));
 
             // Echo what we just received.
 
-            //DBPRINTF("%c",UARTGetDataByte(UART_MODULE_ID_BLUETOOTH));
+            DBPRINTF("%c",UARTGetDataByte(UART_MODULE_ID_BLUETOOTH));
 	}
 
 	// We don't care about TX interrupt
@@ -103,3 +152,4 @@ void __ISR(_UART_2_VECTOR, ipl2) IntUart2Handler(void)
 	}
 
 }
+
